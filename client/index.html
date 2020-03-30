@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+          crossorigin="anonymous">
+    <style>
+    h1:not(:first-child) {
+      margin-top: 1em;
+    }
+    html {
+      margin-top: 1em;
+      margin-left: 1em;
+    }
+    button[value="send-mail"] {
+      min-width: 120px;
+    }
+    .form-control {
+      max-width: 500px;
+    }
+    .test-container {
+      cursor: pointer;
+    }
+    </style>
+</head>
+  <body>
+    <h1><svg class="bi bi-file-earmark-spreadsheet" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd" d="M13 9H3V8h10v1zm0 3H3v-1h10v1z" clip-rule="evenodd"/>
+      <path fill-rule="evenodd" d="M5 14V9h1v5H5zm4 0V9h1v5H9z" clip-rule="evenodd"/>
+      <path d="M4 1h5v1H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6h1v7a2 2 0 01-2 2H4a2 2 0 01-2-2V3a2 2 0 012-2z"/>
+      <path d="M9 4.5V1l5 5h-3.5A1.5 1.5 0 019 4.5z"/>
+    </svg>Data Sheet</h1>
+    <div id="selected-spreadsheet">   
+      <p id="spreadsheet-name" class="doc-link">No data sheet selected.</p>
+      <div id="spreadsheet-names-container"></div>
+      <div id="spreadsheet-columns-container"></div>
+      <div id="spreadsheet-email-column"></div>
+    </div>    
+    <button value="select-sheet" class="share creates-picker" disabled>Select a spreadsheet</button>
+    <h1><svg class="bi bi-file-earmark-text" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 1h5v1H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6h1v7a2 2 0 01-2 2H4a2 2 0 01-2-2V3a2 2 0 012-2z"/>
+      <path d="M9 4.5V1l5 5h-3.5A1.5 1.5 0 019 4.5z"/>
+      <path fill-rule="evenodd" d="M5 11.5a.5.5 0 01.5-.5h2a.5.5 0 010 1h-2a.5.5 0 01-.5-.5zm0-2a.5.5 0 01.5-.5h5a.5.5 0 010 1h-5a.5.5 0 01-.5-.5zm0-2a.5.5 0 01.5-.5h5a.5.5 0 010 1h-5a.5.5 0 01-.5-.5z" clip-rule="evenodd"/>
+    </svg>Email template</h1>
+    <div id="selected-template">
+    </div>
+  <? if (emailTemplate) { ?>
+    <p id="template-name" class="doc-link"><a href="<?= emailTemplate.url ?>"><?= emailTemplate.name ?></a></p>
+  <? } else { ?>
+    <p id="template-name" class="doc-link">No email template selected.</p>
+    <button value="create-template" class="action">Create a new template</button><br>
+  <? } ?>
+    <button value="select-template" class="action creates-picker" disabled>Select a template</button>
+    <h1><svg class="bi bi-envelope" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd" d="M14 3H2a1 1 0 00-1 1v8a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1zM2 2a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H2z" clip-rule="evenodd"/>
+      <path fill-rule="evenodd" d="M.071 4.243a.5.5 0 01.686-.172L8 8.417l7.243-4.346a.5.5 0 01.514.858L8 9.583.243 4.93a.5.5 0 01-.172-.686z" clip-rule="evenodd"/>
+      <path d="M6.752 8.932l.432-.252-.504-.864-.432.252.504.864zm-6 3.5l6-3.5-.504-.864-6 3.5.504.864zm8.496-3.5l-.432-.252.504-.864.432.252-.504.864zm6 3.5l-6-3.5.504-.864 6 3.5-.504.864z"/>
+    </svg>Gmail settings</h1>
+    <div id="email-settings" class="form-group">
+      Use:<select id="email-from" class="form-control">
+      <? for (let alias of aliases) { ?>
+        <option value="<?= alias ?>"><?= alias ?></option>
+      <? } ?>
+      </select><br>
+      From:<input id="email-from-name" class="form-control" placeholder="From" /><br>
+      Subject:<input id="email-subject" class="form-control" placeholder="Subject" />
+    </div> 
+    <button value="send-mail">Send Mail</button>
+    <span class="test-container">
+      TEST
+      <span class="test-toggle">
+        <svg class="bi bi-toggle-off" width="2em" height="2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M11 4a4 4 0 010 8H8a4.992 4.992 0 002-4 4.992 4.992 0 00-2-4h3zm-6 8a4 4 0 110-8 4 4 0 010 8zM0 8a5 5 0 005 5h6a5 5 0 000-10H5a5 5 0 00-5 5z" clip-rule="evenodd"/>
+        </svg>
+        <svg class="bi bi-toggle-on d-none" width="2em" height="2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M5 3a5 5 0 000 10h6a5 5 0 000-10H5zm6 9a4 4 0 100-8 4 4 0 000 8z" clip-rule="evenodd"/>
+        </svg>
+      </span>
+      RUN
+    </span>
+    <div class="dev-debug-tools">
+    <button id="dump-config">console log config</button>
+    </div>
+    <?!= include_('client/js/picker'); ?>
+    <?!= include_('client/js/form'); ?>
+    <?!= include_('client/js/handlers'); ?>
+<script>
+const config = {
+  SPREADSHEET_ID: '',
+  SHEET_NAME: '', 
+  HEADER_ROWS: 0,
+  index: {},
+  <? if (emailTemplate) { ?>
+  TEMPLATE_ID: '<?= emailTemplate.id ?>',
+  <? } ?>
+  EMAIL_FROM: '', 
+  EMAIL_FROM_NAME: '',
+  EMAIL_SUBJECT: '',
+  
+  // Testing
+  TESTING: true,
+  AUTO_TEST: true,
+  TEST_SHEET_NAME: 'TEST',
+  MARK_TESTS_SENT: false,
+};
+document.querySelector('#dump-config').addEventListener('click', () => console.log(config));
+</script>
+    <script src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>
+  </body>
+</html>
+
+

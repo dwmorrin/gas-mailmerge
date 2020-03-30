@@ -1,0 +1,158 @@
+<script>
+function createNewTemplate() {
+  google.script.run
+    .withSuccessHandler(updateResource)
+    .withFailureHandler(showError)
+    .withUserObject(document.querySelector('#template-name'))
+    .createNewTemplate();
+}
+
+function handleChangeColumns() {
+  const boxes = Array.from(document.querySelector('#spreadsheet-columns-container')
+    .querySelectorAll('input[type="checkbox"]')).filter(box => box.checked);
+  const columns = Object.keys(config.index);
+  const boxesToSync = boxes.slice(); // copy so we can "cross-off" as we go
+  columns.forEach(name => { // sync existing columns
+    const index = boxesToSync.findIndex(box => box.dataset.name == name);
+    if (index > -1) {
+      boxesToSync.splice(index, 1); // mark this box "done" by removing it
+    } else {
+      delete config.index[name]; // this one is no longer a data column
+    }
+  });
+  boxesToSync.forEach(box => { // all that's left are the new columns
+    config.index[box.dataset.name] = box.dataset.index;
+  });
+  populateEmailColumnSelect(boxes); // send original list to the next function
+}
+
+function handleChangeEmailColumn({target}) {
+  const emailSelectContainer = document.querySelector('#spreadsheet-email-column');
+}
+
+function handleChangeSheetName({target}) {
+  const container = document.querySelector('#spreadsheet-columns-container');
+  google.script.run
+    .withSuccessHandler(populateColumnSelect)
+    .withFailureHandler(showError)
+    .withUserObject(container)
+    .getHeaders(target.value);
+}
+
+function handleToggle() {
+  ['.bi-toggle-on', '.bi-toggle-off'].forEach(image => {
+    document.querySelector(image).classList.toggle('d-none');
+  });
+  document.querySelector('button[value="send-mail"]').classList.toggle('create');
+}
+
+function populateColumnSelect(columnList) {
+  const columnContainer = document.querySelector('#spreadsheet-columns-container');
+  const instructions = document.createElement('p');
+  instructions.textContent = "Select which columns contain your data.";
+  instructions.textContent += " Use the text boxes to set the template variables names.";
+  columnContainer.appendChild(instructions);
+  columnList.forEach((column, index) => {
+    const container = document.createElement('div');
+    container.classList.add("input-group", "mb-3");
+    const checkbox = document.createElement('input');
+    checkbox.setAttribute('type', 'checkbox');
+    checkbox.setAttribute('data-index', index);
+    checkbox.setAttribute('data-name', column)
+    checkbox.setAttribute('checked', true);
+    const id = column.replace(" ", "_") + "_checkbox";
+    checkbox.setAttribute('id', id);
+    container.appendChild(checkbox);
+    const label = document.createElement('label');
+    label.setAttribute("for", id);
+    label.textContent = column;
+    container.appendChild(label);
+    const templateNameInput = document.createElement('input');
+    templateNameInput.setAttribute('value', column.replace(" ", "_").toUpperCase());
+    templateNameInput.setAttribute('data-index', index);
+    templateNameInput.setAttribute('data-name', column);
+    container.appendChild(templateNameInput);
+    columnContainer.appendChild(container);
+  });
+  columnContainer.addEventListener('change', handleChangeColumns);
+  initializeEmailColumnSelect();  
+}
+
+// setup the select for which column contains emails
+function initializeEmailColumnSelect() {
+  const emailSelectContainer = document.querySelector('#spreadsheet-email-column');
+  const instructions = document.createElement('p');
+  instructions.textContent = 'Select the data column with email addresses';
+  emailSelectContainer.appendChild(instructions);
+  const emailSelect = document.createElement('select');
+  emailSelect.classList.add('form-control');
+  const option = document.createElement('option');
+  option.textContent = "select some data columns";
+  option.setAttribute("data-name", "null");
+  option.setAttribute("data-index", "null");
+  emailSelect.appendChild(option);
+  emailSelectContainer.appendChild(emailSelect);
+  emailSelectContainer.addEventListener('change', handleChangeEmailColumn); 
+}
+
+/**
+ * @param {checkbox DOM element[]} boxes These are all checked
+ */
+function populateEmailColumnSelect(boxes) {
+  // update so each value is represented in the select
+  const emailSelectContainer = document.querySelector('#spreadsheet-email-column');
+  const options = emailSelectContainer.querySelectorAll('option');
+  options.forEach(option => {
+    const index = boxes.findIndex(box => box.dataset.name == option.dataset.name);
+    if (index > -1) {
+      boxes.splice(index, 1); // already in the select, cross it off the list
+    } else {
+      option.remove(); // this was deselected by the user, remove this choice
+    }
+  });
+  // the only boxes left should be options we need to add
+  const select = emailSelectContainer.querySelector('select');
+  boxes.forEach(box => {
+    const option = document.createElement('option');
+    option.setAttribute('data-name', box.dataset.name);
+    option.setAttribute('data-index', box.dataset.index);
+    option.textContent = box.dataset.name;
+    select.appendChild(option);
+  });
+}
+
+function populateSheetNameSelect(names) {
+  const container = document.querySelector('#spreadsheet-names-container');
+  while (container.firstChild) container.firstChild.remove();
+  const instructions = document.createElement('p');
+  instructions.textContent = 'Select your data sheet';
+  container.appendChild(instructions);
+  names.forEach(name => {
+    const input_container = document.createElement('div');
+    input_container.classList.add("input-group", "mb-3");
+    const radio = document.createElement('input');
+    radio.setAttribute('type', 'radio');
+    radio.setAttribute('value', name);
+    radio.setAttribute('name', 'sheet_name');
+    const id = name.replace(" ", "_") + "_radio";
+    radio.setAttribute('id', id);
+    const label = document.createElement('label');
+    label.setAttribute('for', id);
+    label.textContent = name;
+    input_container.appendChild(radio);
+    input_container.appendChild(label);
+    container.appendChild(input_container);
+  });
+  container.addEventListener('change', handleChangeSheetName);
+}
+
+function updateResource({url, name}, container) {
+  while (container.firstChild) {
+    container.firstChild.remove();
+  }
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.textContent = name;
+  container.appendChild(link);
+}
+</script>

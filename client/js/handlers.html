@@ -1,0 +1,10 @@
+<script>
+document.querySelector('.test-toggle').addEventListener('click', handleToggle);
+Array.from(document.querySelectorAll('.creates-picker')).forEach(button => {
+  button.addEventListener('click', getOAuthToken);
+});
+const createDocButton = document.querySelector('button[value="create-template"]');
+if (createDocButton) {
+  createDocButton.addEventListener('click', createNewTemplate);
+}
+</script>
